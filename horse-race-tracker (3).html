@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏇 Horse Race Tracker</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .app {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 22px; font-weight: 500; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+    h2 { font-size: 18px; font-weight: 500; margin-bottom: .75rem; }
+    h3 { font-size: 16px; font-weight: 500; margin-bottom: .75rem; }
+
+    .card {
+      background: #fff;
+      border: 0.5px solid rgba(0,0,0,0.15);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: .75rem;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      border: 0.5px solid rgba(0,0,0,0.25);
+      border-radius: 8px;
+      background: transparent;
+      color: #1a1a1a;
+      font-size: 14px; font-weight: 500;
+      cursor: pointer;
+      transition: background .15s;
+      font-family: inherit;
+    }
+    .btn:hover { background: #f0f0ec; }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: #e8f0fb; border-color: #a0b8e8; color: #1a4fa0; }
+    .btn-primary:hover { opacity: .85; }
+    .btn-danger { background: #fdecea; border-color: #f5b8b5; color: #a02020; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-full { width: 100%; justify-content: center; }
+
+    .badge {
+      display: inline-block; padding: 3px 8px;
+      border-radius: 8px; font-size: 12px; font-weight: 500;
+    }
+    .badge-scratched { background: #fdecea; color: #a02020; }
+
+    input[type=text], input[type=number] {
+      width: 100%; padding: 8px 12px;
+      border: 0.5px solid rgba(0,0,0,0.25);
+      border-radius: 8px;
+      background: #fff; color: #1a1a1a;
+      font-size: 14px; font-family: inherit;
+      margin-bottom: .5rem;
+    }
+    input:focus { outline: none; border-color: #a0b8e8; box-shadow: 0 0 0 3px rgba(160,184,232,0.3); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; }
+
+    .metric {
+      background: #f0f0ec; border-radius: 8px; padding: .75rem 1rem;
+    }
+    .metric-label { font-size: 13px; color: #666; margin-bottom: 4px; }
+    .metric-value { font-size: 22px; font-weight: 500; }
+
+    .tabs {
+      display: flex; gap: 4px; margin-bottom: 1rem;
+      border-bottom: 0.5px solid rgba(0,0,0,0.15);
+    }
+    .tab {
+      padding: 8px 14px; font-size: 14px; cursor: pointer;
+      border-bottom: 2px solid transparent; color: #666;
+      font-family: inherit;
+      background: none; border-top: none; border-left: none; border-right: none;
+    }
+    .tab.active { color: #1a4fa0; border-bottom-color: #1a4fa0; }
+
+    .screen { display: none; padding: 1rem 0; }
+    .screen.active { display: block; }
+
+    .step-indicator { font-size: 12px; color: #999; margin-bottom: .25rem; }
+
+    .track { display: flex; gap: 4px; align-items: center; padding: 6px 0; }
+    .track-label { font-size: 13px; font-weight: 500; min-width: 28px; color: #666; }
+    .track-spaces { display: flex; gap: 3px; flex: 1; }
+    .space {
+      width: 20px; height: 20px; border-radius: 3px;
+      border: 0.5px solid rgba(0,0,0,0.15);
+      background: #f0f0ec;
+    }
+    .space.filled { background: #3B6D11; }
+
+    .winner-screen { display: none; padding: 1rem 0; }
+    .winner-box {
+      background: #fef9e8; border: 1px solid #e8d080;
+      border-radius: 12px; padding: 1.5rem; text-align: center; margin-bottom: 1rem;
+    }
+    .winner-title { font-size: 24px; font-weight: 500; color: #7a5c00; }
+    .pot-display { font-size: 36px; font-weight: 500; color: #1a6b3a; text-align: center; margin: .5rem 0; }
+
+    .log-entry {
+      font-size: 13px; padding: 5px 0;
+      border-bottom: 0.5px solid rgba(0,0,0,0.1); color: #555;
+    }
+    .log-entry:last-child { border-bottom: none; }
+
+    label { font-size: 12px; color: #666; display: block; margin-bottom: 4px; }
+
+    .alert-danger {
+      padding: .75rem; background: #fdecea; border-radius: 8px;
+      font-size: 14px; color: #a02020; margin-top: .75rem;
+    }
+    .alert-success {
+      padding: .75rem; background: #eaf6ee; border-radius: 8px;
+      font-size: 14px; color: #1a6b3a; margin-top: .75rem;
+    }
+
+    @media (max-width: 480px) {
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+      .space { width: 16px; height: 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <h1>🏇 Horse Race Tracker</h1>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('setup', this)">Setup</button>
+    <button class="tab" onclick="switchTab('scratch', this)">Scratch</button>
+    <button class="tab" onclick="switchTab('race', this)">Race</button>
+    <button class="tab" onclick="switchTab('log', this)">Log</button>
+  </div>
+
+  <!-- SETUP -->
+  <div id="tab-setup" class="screen active">
+    <div class="step-indicator">Step 1 of 3 — Add players & assign cards</div>
+    <div class="card">
+      <h3>Players</h3>
+      <div style="display:flex;gap:8px;margin-bottom:.75rem">
+        <input type="text" id="player-name-input" placeholder="Player name" style="margin:0;flex:1" onkeydown="if(event.key==='Enter')addPlayer()">
+        <button class="btn btn-primary" onclick="addPlayer()"><i class="ti ti-plus" aria-hidden="true"></i> Add</button>
+      </div>
+      <div id="player-list"><p style="font-size:13px;color:#666">No players added yet.</p></div>
+    </div>
+
+    <div class="card" id="card-assignment-section" style="display:none">
+      <h3>Card Assignments</h3>
+      <p style="font-size:13px;color:#666;margin-bottom:.75rem">Each horse number has exactly 4 cards in the deck. Use +/− to assign how many of that horse's cards each player is holding. Total must equal 4.</p>
+      <div id="card-assignments"></div>
+    </div>
+
+    <div style="margin-top:1rem">
+      <label style="display:block;margin-bottom:.5rem">Scratch penalties: Scratch 1, 2, 3, 4</label>
+      <div class="grid-2" style="margin-bottom:1rem">
+        <div><label>Scratch 1</label><input type="number" id="pen1" value="0.25" step="0.25" min="0"></div>
+        <div><label>Scratch 2</label><input type="number" id="pen2" value="0.50" step="0.25" min="0"></div>
+        <div><label>Scratch 3</label><input type="number" id="pen3" value="0.75" step="0.25" min="0"></div>
+        <div><label>Scratch 4</label><input type="number" id="pen4" value="1.00" step="0.25" min="0"></div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="goToScratch()">Start Game — Go to Scratching <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+    </div>
+  </div>
+
+  <!-- SCRATCH -->
+  <div id="tab-scratch" class="screen">
+    <div class="step-indicator">Step 2 of 3 — Scratch 4 horses</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+        <h3 style="margin:0">Scratch Phase</h3>
+        <span id="scratch-count-badge" class="badge badge-scratched">0 / 4 scratched</span>
+      </div>
+      <p style="font-size:13px;color:#666;margin-bottom:1rem">Enter the dice roll. That horse is scratched and any player holding its card pays the penalty into the pot.</p>
+      <div id="scratch-roller">
+        <div class="grid-2" style="margin-bottom:.75rem">
+          <div><label>Die 1</label><input type="number" id="scratch-die1" min="1" max="6" placeholder="1–6"></div>
+          <div><label>Die 2</label><input type="number" id="scratch-die2" min="1" max="6" placeholder="1–6"></div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="recordScratch()">Scratch This Horse</button>
+      </div>
+      <div id="scratch-result"></div>
+    </div>
+
+    <div class="card">
+      <h3>Scratched Horses</h3>
+      <div id="scratched-list"><p style="font-size:13px;color:#666">None yet.</p></div>
+    </div>
+
+    <div id="go-to-race-btn" style="display:none;margin-top:.5rem">
+      <button class="btn btn-primary btn-full" onclick="goToRace()">All 4 Scratched — Start the Race! 🏇</button>
+    </div>
+  </div>
+
+  <!-- RACE -->
+  <div id="tab-race" class="screen">
+    <div class="step-indicator">Step 3 of 3 — Race to the finish!</div>
+    <div class="grid-3" style="margin-bottom:1rem">
+      <div class="metric"><div class="metric-label">Roll #</div><div class="metric-value" id="roll-number">0</div></div>
+      <div class="metric"><div class="metric-label">Pot 💰</div><div class="metric-value" id="pot-display">$0.00</div></div>
+      <div class="metric"><div class="metric-label">Leader</div><div class="metric-value" id="leader-display" style="font-size:16px">—</div></div>
+    </div>
+
+    <div class="card">
+      <h3>Roll the Dice</h3>
+      <div class="grid-2" style="margin-bottom:.75rem">
+        <div><label>Die 1</label><input type="number" id="race-die1" min="1" max="6" placeholder="1–6" onkeydown="if(event.key==='Enter')recordRoll()"></div>
+        <div><label>Die 2</label><input type="number" id="race-die2" min="1" max="6" placeholder="1–6" onkeydown="if(event.key==='Enter')recordRoll()"></div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="recordRoll()">Record Roll <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+      <div id="roll-result"></div>
+    </div>
+
+    <div class="card">
+      <h3>Track Positions</h3>
+      <div id="race-track"></div>
+    </div>
+
+    <div style="margin-top:.5rem">
+      <button class="btn btn-full" onclick="confirmEndGame()" style="background:#fdecea;border-color:#f5b8b5;color:#a02020;">🏁 End Game &amp; See Summary</button>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div id="tab-log" class="screen">
+    <h3>Roll Log</h3>
+    <div class="card">
+      <div id="roll-log"><p style="font-size:13px;color:#666">No rolls yet.</p></div>
+    </div>
+    <button class="btn btn-sm" onclick="exportLog()" style="margin-top:.5rem"><i class="ti ti-download" aria-hidden="true"></i> Copy Log to Clipboard</button>
+  </div>
+
+  <!-- WINNER -->
+  <div class="winner-screen" id="winner-screen">
+    <div class="winner-box">
+      <div style="font-size:40px">🏆</div>
+      <div class="winner-title" id="winner-horse-name"></div>
+      <div style="font-size:14px;color:#7a5c00;margin-top:4px">wins the race!</div>
+    </div>
+    <div class="card">
+      <h3>Pot Payout</h3>
+      <div class="pot-display" id="winner-pot"></div>
+      <div id="winner-breakdown"></div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="newRound()" style="margin-top:1rem">🔄 New Round (Keep Players)</button>
+    <button class="btn btn-sm btn-full" onclick="fullReset()" style="margin-top:.5rem;color:#a02020">Full Reset — Start Over</button>
+  </div>
+
+  <!-- GAME SUMMARY -->
+  <div class="winner-screen" id="summary-screen">
+    <div style="background:#1a1a2e;border-radius:12px;padding:1.5rem;text-align:center;margin-bottom:1rem;">
+      <div style="font-size:36px">🏁</div>
+      <div style="font-size:22px;font-weight:500;color:#fff;margin-top:.5rem">Game Over</div>
+      <div style="font-size:14px;color:#aaa;margin-top:4px" id="summary-subtitle"></div>
+    </div>
+
+    <div class="card">
+      <h3>Player Summary</h3>
+      <p style="font-size:12px;color:#999;margin-bottom:.75rem">Paid In = all money put into the pot. Won = payout from winning horse. Net = what you walk away with (positive = profit, negative = loss).</p>
+      <div id="summary-table"></div>
+    </div>
+
+    <div class="card">
+      <h3>Settlements</h3>
+      <p style="font-size:12px;color:#999;margin-bottom:.75rem">Who owes who to settle up.</p>
+      <div id="summary-settlements"></div>
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="newRound()" style="margin-top:1rem">🔄 New Round (Keep Players)</button>
+    <button class="btn btn-sm btn-full" onclick="fullReset()" style="margin-top:.5rem;color:#a02020">Full Reset — Start Over</button>
+  </div>
+
+</div>
+
+<script>
+  const HORSE_NUMBERS = [2,3,4,5,6,7,8,9,10,11,12];
+  const FINISH_LINE = 10;
+  const fmt = n => '$' + parseFloat(n).toFixed(2);
+
+  let state = {
+    players: [],
+    cardAssignments: {},
+    penalties: [0.25, 0.50, 0.75, 1.00],
+    scratchedHorses: [],
+    horsePositions: {},
+    rollLog: [],
+    rollCount: 0,
+    pot: 0,
+    winner: null,
+    playerLedger: {} // { playerName: { paid: 0, won: 0 } }
+  };
+
+  function switchTab(tab, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+
+  function switchTabDirect(tab) {
+    const tabs = ['setup','scratch','race','log'];
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', tabs[i] === tab));
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+
+  function addPlayer() {
+    const input = document.getElementById('player-name-input');
+    const name = input.value.trim();
+    if (!name) return;
+    if (state.players.includes(name)) { alert('That name is already added.'); return; }
+    state.players.push(name);
+    input.value = '';
+    renderPlayerList();
+    renderCardAssignments();
+    document.getElementById('card-assignment-section').style.display = 'block';
+  }
+
+  function removePlayer(name) {
+    state.players = state.players.filter(p => p !== name);
+    HORSE_NUMBERS.forEach(n => {
+      if (state.cardAssignments[n]) state.cardAssignments[n] = state.cardAssignments[n].filter(p => p !== name);
+    });
+    renderPlayerList();
+    renderCardAssignments();
+    if (state.players.length === 0) document.getElementById('card-assignment-section').style.display = 'none';
+  }
+
+  function renderPlayerList() {
+    const el = document.getElementById('player-list');
+    if (!state.players.length) { el.innerHTML = '<p style="font-size:13px;color:#666">No players added yet.</p>'; return; }
+    el.innerHTML = state.players.map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,0.1)">
+        <span style="font-size:14px">${p}</span>
+        <button class="btn btn-sm btn-danger" onclick="removePlayer('${p}')"><i class="ti ti-x" aria-hidden="true"></i></button>
+      </div>`).join('');
+  }
+
+  function changeCardCount(horseNum, playerName, delta) {
+    if (!state.cardAssignments[horseNum]) state.cardAssignments[horseNum] = {};
+    const counts = state.cardAssignments[horseNum];
+    const current = counts[playerName] || 0;
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    const newVal = current + delta;
+    if (newVal < 0) return;
+    if (delta > 0 && total >= 4) { alert('All 4 cards for this horse are already assigned.'); return; }
+    counts[playerName] = newVal;
+    if (counts[playerName] === 0) delete counts[playerName];
+    renderCardAssignments();
+  }
+
+  function getHoldersList(horseNum) {
+    // Returns flat array of player names, repeated by card count (e.g. player with 2 cards appears twice)
+    const counts = state.cardAssignments[horseNum] || {};
+    const list = [];
+    for (const [player, count] of Object.entries(counts)) {
+      for (let i = 0; i < count; i++) list.push(player);
+    }
+    return list;
+  }
+
+  function renderCardAssignments() {
+    const el = document.getElementById('card-assignments');
+    el.innerHTML = HORSE_NUMBERS.map(n => {
+      const counts = state.cardAssignments[n] || {};
+      const total = Object.values(counts).reduce((a, b) => a + b, 0);
+      const remaining = 4 - total;
+      const totalColor = total === 4 ? '#1a6b3a' : total > 0 ? '#7a5c00' : '#999';
+      return `<div style="padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.1)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:14px;font-weight:500">🐴 Horse ${n}</span>
+          <span style="font-size:12px;color:${totalColor};font-weight:500">${total}/4 assigned${remaining > 0 ? ' — ' + remaining + ' left' : ' ✓'}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          ${state.players.map(p => {
+            const count = counts[p] || 0;
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 8px;background:#f8f8f5;border-radius:6px;">
+              <span style="font-size:13px;color:#333">${p}</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <button onclick="changeCardCount(${n},'${p}',-1)"
+                  style="width:28px;height:28px;border-radius:6px;border:0.5px solid rgba(0,0,0,0.2);background:${count > 0 ? '#fdecea' : '#eee'};color:${count > 0 ? '#a02020' : '#aaa'};font-size:16px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;line-height:1">−</button>
+                <span style="font-size:15px;font-weight:500;min-width:14px;text-align:center;color:${count > 0 ? '#1a4fa0' : '#aaa'}">${count}</span>
+                <button onclick="changeCardCount(${n},'${p}',1)"
+                  style="width:28px;height:28px;border-radius:6px;border:0.5px solid rgba(0,0,0,0.2);background:${total < 4 ? '#e8f0fb' : '#eee'};color:${total < 4 ? '#1a4fa0' : '#aaa'};font-size:16px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;line-height:1">+</button>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function goToScratch() {
+    if (state.players.length < 2) { alert('Add at least 2 players first.'); return; }
+    state.penalties = [
+      parseFloat(document.getElementById('pen1').value) || 0.25,
+      parseFloat(document.getElementById('pen2').value) || 0.50,
+      parseFloat(document.getElementById('pen3').value) || 0.75,
+      parseFloat(document.getElementById('pen4').value) || 1.00
+    ];
+    const ante = state.penalties[0];
+    state.pot = state.players.length * ante;
+    // Initialize ledger — everyone pays the ante to start
+    state.playerLedger = {};
+    state.players.forEach(p => { state.playerLedger[p] = { paid: ante, won: 0 }; });
+    switchTabDirect('scratch');
+    renderScratchedList();
+  }
+
+  function recordScratch() {
+    if (state.scratchedHorses.length >= 4) { alert('Already scratched 4 horses.'); return; }
+    const d1 = parseInt(document.getElementById('scratch-die1').value);
+    const d2 = parseInt(document.getElementById('scratch-die2').value);
+    if (!d1 || !d2 || d1 < 1 || d1 > 6 || d2 < 1 || d2 > 6) { alert('Enter valid dice values (1–6).'); return; }
+    const sum = d1 + d2;
+    if (state.scratchedHorses.includes(sum)) { alert(`Horse ${sum} is already scratched! Roll again.`); return; }
+    const idx = state.scratchedHorses.length;
+    const penalty = state.penalties[idx];
+    state.scratchedHorses.push(sum);
+    const holders = getHoldersList(sum);
+    state.pot += holders.length * penalty;
+    // Track per-player payments in ledger
+    const counts = state.cardAssignments[sum] || {};
+    Object.entries(counts).forEach(([p, c]) => {
+      if (!state.playerLedger[p]) state.playerLedger[p] = { paid: 0, won: 0 };
+      state.playerLedger[p].paid += c * penalty;
+    });
+    const holderSummary = Object.entries(counts).map(([p,c]) => `${p} (${c} card${c>1?'s':''})`).join(', ');
+    state.rollLog.push({ type: 'scratch', roll: idx + 1, dice: [d1, d2], horse: sum, penalty, holders, potAfter: state.pot });
+    document.getElementById('scratch-result').innerHTML = `<div class="alert-danger">
+      🚫 Horse ${sum} scratched! ${holders.length ? holderSummary + ` — each card pays ${fmt(penalty)}` : 'No one held that card.'}<br>
+      <span style="font-size:12px">Pot: ${fmt(state.pot)}</span>
+    </div>`;
+    document.getElementById('scratch-die1').value = '';
+    document.getElementById('scratch-die2').value = '';
+    renderScratchedList();
+    document.getElementById('scratch-count-badge').textContent = `${state.scratchedHorses.length} / 4 scratched`;
+    if (state.scratchedHorses.length === 4) {
+      document.getElementById('scratch-roller').style.display = 'none';
+      document.getElementById('go-to-race-btn').style.display = 'block';
+    }
+  }
+
+  function renderScratchedList() {
+    const el = document.getElementById('scratched-list');
+    if (!state.scratchedHorses.length) { el.innerHTML = '<p style="font-size:13px;color:#666">None yet.</p>'; return; }
+    el.innerHTML = state.scratchedHorses.map((h, i) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid rgba(0,0,0,0.1)">
+        <span>🚫 Horse ${h}</span>
+        <span style="font-size:12px;color:#666">Scratch ${i + 1} — Pay ${fmt(state.penalties[i])} if held</span>
+      </div>`).join('');
+  }
+
+  function goToRace() {
+    HORSE_NUMBERS.forEach(n => state.horsePositions[n] = 0);
+    switchTabDirect('race');
+    renderRaceTrack();
+    updateRaceMetrics();
+  }
+
+  function recordRoll() {
+    const d1 = parseInt(document.getElementById('race-die1').value);
+    const d2 = parseInt(document.getElementById('race-die2').value);
+    if (!d1 || !d2 || d1 < 1 || d1 > 6 || d2 < 1 || d2 > 6) { alert('Enter valid dice values (1–6).'); return; }
+    const sum = d1 + d2;
+    state.rollCount++;
+    let entry;
+    if (state.scratchedHorses.includes(sum)) {
+      const pen = state.penalties[state.scratchedHorses.indexOf(sum)];
+      const counts = state.cardAssignments[sum] || {};
+      const totalCards = Object.values(counts).reduce((a, b) => a + b, 0);
+      const totalCharge = totalCards * pen;
+      state.pot += totalCharge;
+      // Track per-player payments in ledger
+      Object.entries(counts).forEach(([p, c]) => {
+        if (!state.playerLedger[p]) state.playerLedger[p] = { paid: 0, won: 0 };
+        state.playerLedger[p].paid += c * pen;
+      });
+      const chargeDetail = Object.entries(counts).map(([p, c]) => `${p} pays ${fmt(c * pen)} (${c} card${c>1?'s':''})`).join(', ');
+      entry = { type: 'scratch-hit', rollNum: state.rollCount, dice: [d1, d2], horse: sum, penalty: pen, totalCharge, chargeDetail, potAfter: state.pot };
+      document.getElementById('roll-result').innerHTML = `<div class="alert-danger">
+        🚫 Rolled ${sum} — scratched horse! ${chargeDetail || 'No one held that card.'}. Pot: ${fmt(state.pot)}
+      </div>`;
+    } else {
+      state.horsePositions[sum]++;
+      const pos = state.horsePositions[sum];
+      entry = { type: 'move', rollNum: state.rollCount, dice: [d1, d2], horse: sum, position: pos, potAfter: state.pot };
+      if (pos >= FINISH_LINE) {
+        entry.winner = true;
+        state.winner = sum;
+        state.rollLog.push(entry);
+        renderRaceTrack();
+        updateRaceMetrics();
+        showWinner(sum);
+        return;
+      }
+      document.getElementById('roll-result').innerHTML = `<div class="alert-success">
+        ✅ Horse ${sum} moves to space ${pos}/${FINISH_LINE}
+      </div>`;
+    }
+    state.rollLog.push(entry);
+    document.getElementById('race-die1').value = '';
+    document.getElementById('race-die2').value = '';
+    renderRaceTrack();
+    updateRaceMetrics();
+    renderLog();
+  }
+
+  function renderRaceTrack() {
+    const racing = HORSE_NUMBERS.filter(n => !state.scratchedHorses.includes(n));
+    document.getElementById('race-track').innerHTML = racing.map(n => {
+      const pos = state.horsePositions[n] || 0;
+      const spaces = Array.from({ length: FINISH_LINE }, (_, i) =>
+        `<div class="space${i < pos ? ' filled' : ''}"></div>`).join('');
+      return `<div class="track">
+        <span class="track-label">${n}</span>
+        <div class="track-spaces">${spaces}</div>
+        <span style="font-size:12px;color:#999;min-width:36px;text-align:right">${pos}/${FINISH_LINE}</span>
+      </div>`;
+    }).join('');
+  }
+
+  function updateRaceMetrics() {
+    document.getElementById('roll-number').textContent = state.rollCount;
+    document.getElementById('pot-display').textContent = fmt(state.pot);
+    const racing = HORSE_NUMBERS.filter(n => !state.scratchedHorses.includes(n));
+    let maxPos = -1, leader = '—';
+    racing.forEach(n => { if ((state.horsePositions[n] || 0) > maxPos) { maxPos = state.horsePositions[n] || 0; leader = n; } });
+    document.getElementById('leader-display').textContent = maxPos > 0 ? '🐴 ' + leader : '—';
+  }
+
+  function renderLog() {
+    const el = document.getElementById('roll-log');
+    if (!state.rollLog.length) { el.innerHTML = '<p style="font-size:13px;color:#666">No rolls yet.</p>'; return; }
+    el.innerHTML = [...state.rollLog].reverse().map(e => {
+      if (e.type === 'scratch') return `<div class="log-entry">Scratch ${e.roll}: ${e.dice[0]}+${e.dice[1]}=${e.horse} — Horse ${e.horse} scratched | ${e.holders.length ? e.holders.join(', ') + ' pay ' + fmt(e.penalty) : 'no holders'} | Pot: ${fmt(e.potAfter)}</div>`;
+      if (e.type === 'scratch-hit') return `<div class="log-entry">Roll ${e.rollNum}: ${e.dice[0]}+${e.dice[1]}=${e.horse} — Scratched horse! ${e.chargeDetail || 'no holders'} | Pot: ${fmt(e.potAfter)}</div>`;
+      return `<div class="log-entry">Roll ${e.rollNum}: ${e.dice[0]}+${e.dice[1]}=${e.horse} — Horse ${e.horse} → space ${e.position}${e.winner ? ' 🏆 WINNER' : ''}</div>`;
+    }).join('');
+  }
+
+  function showWinner(horse) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('winner-screen').style.display = 'block';
+    document.getElementById('winner-horse-name').textContent = '🐴 Horse ' + horse + ' wins!';
+    document.getElementById('winner-pot').textContent = fmt(state.pot);
+    const counts = state.cardAssignments[horse] || {};
+    const totalCards = Object.values(counts).reduce((a, b) => a + b, 0);
+    // Record winnings in ledger
+    if (totalCards > 0) {
+      const perCard = state.pot / totalCards;
+      Object.entries(counts).forEach(([p, c]) => {
+        if (!state.playerLedger[p]) state.playerLedger[p] = { paid: 0, won: 0 };
+        state.playerLedger[p].won += perCard * c;
+      });
+    }
+    if (!totalCards) {
+      document.getElementById('winner-breakdown').innerHTML = '<p style="font-size:14px;color:#666">No one held cards for Horse ' + horse + '. House keeps the pot.</p>';
+    } else {
+      const perCard = state.pot / totalCards;
+      document.getElementById('winner-breakdown').innerHTML =
+        '<div style="margin-top:.5rem">' +
+        Object.entries(counts).map(([p, c]) => {
+          const payout = perCard * c;
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,0.1)">
+            <span>${p} <span style="font-size:12px;color:#999">(${c} card${c>1?'s':''})</span></span>
+            <span style="color:#1a6b3a;font-weight:500">+${fmt(payout)}</span>
+          </div>`;
+        }).join('') +
+        '</div>' +
+        `<p style="font-size:12px;color:#999;margin-top:.5rem">${fmt(perCard)} per card × ${totalCards} total cards = ${fmt(state.pot)}</p>`;
+    }
+  }
+
+  function confirmEndGame() {
+    if (!confirm('End the game now and show the final summary?')) return;
+    showSummary();
+  }
+
+  function showSummary() {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('winner-screen').style.display = 'none';
+    document.getElementById('summary-screen').style.display = 'block';
+
+    const winnerHorse = state.winner;
+    document.getElementById('summary-subtitle').textContent = winnerHorse
+      ? `Horse ${winnerHorse} won the race • ${state.rollCount} rolls`
+      : `Game ended early • ${state.rollCount} rolls`;
+
+    // Build per-player net summary
+    const ledger = state.playerLedger;
+    const rows = state.players.map(p => {
+      const paid = ledger[p]?.paid || 0;
+      const won = ledger[p]?.won || 0;
+      const net = won - paid;
+      return { p, paid, won, net };
+    });
+
+    document.getElementById('summary-table').innerHTML =
+      `<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;font-size:12px;color:#999;font-weight:500;padding:0 0 6px 0;border-bottom:1px solid rgba(0,0,0,0.1);margin-bottom:4px;">
+        <span>Player</span><span style="text-align:right;padding-right:12px">Paid In</span><span style="text-align:right;padding-right:12px">Won</span><span style="text-align:right">Net</span>
+      </div>` +
+      rows.map(({ p, paid, won, net }) => {
+        const netColor = net > 0 ? '#1a6b3a' : net < 0 ? '#a02020' : '#666';
+        const netSign = net > 0 ? '+' : '';
+        return `<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;align-items:center;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
+          <span style="font-size:14px;font-weight:500">${p}</span>
+          <span style="text-align:right;padding-right:12px;font-size:13px;color:#555">${fmt(paid)}</span>
+          <span style="text-align:right;padding-right:12px;font-size:13px;color:#1a6b3a">${won > 0 ? fmt(won) : '—'}</span>
+          <span style="text-align:right;font-size:14px;font-weight:600;color:${netColor}">${netSign}${fmt(net)}</span>
+        </div>`;
+      }).join('');
+
+    // Calculate settlements (who pays who)
+    const debtors = rows.filter(r => r.net < 0).map(r => ({ p: r.p, amount: -r.net })).sort((a,b) => b.amount - a.amount);
+    const creditors = rows.filter(r => r.net > 0).map(r => ({ p: r.p, amount: r.net })).sort((a,b) => b.amount - a.amount);
+    const settlements = [];
+    const d = debtors.map(x => ({...x}));
+    const c = creditors.map(x => ({...x}));
+    let di = 0, ci = 0;
+    while (di < d.length && ci < c.length) {
+      const pay = Math.min(d[di].amount, c[ci].amount);
+      if (pay > 0.005) settlements.push({ from: d[di].p, to: c[ci].p, amount: pay });
+      d[di].amount -= pay;
+      c[ci].amount -= pay;
+      if (d[di].amount < 0.005) di++;
+      if (c[ci].amount < 0.005) ci++;
+    }
+
+    if (!settlements.length) {
+      document.getElementById('summary-settlements').innerHTML = '<p style="font-size:13px;color:#666">Everyone is even — no settlements needed.</p>';
+    } else {
+      document.getElementById('summary-settlements').innerHTML = settlements.map(s =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.08);">
+          <span style="font-size:14px"><strong>${s.from}</strong> pays <strong>${s.to}</strong></span>
+          <span style="font-size:15px;font-weight:600;color:#1a4fa0">${fmt(s.amount)}</span>
+        </div>`
+      ).join('');
+    }
+  }
+
+  function newRound() {
+    state.scratchedHorses = [];
+    state.horsePositions = {};
+    state.rollLog = [];
+    state.rollCount = 0;
+    state.pot = 0;
+    state.winner = null;
+    state.playerLedger = {};
+    HORSE_NUMBERS.forEach(n => state.cardAssignments[n] = {});
+    document.getElementById('winner-screen').style.display = 'none';
+    document.getElementById('summary-screen').style.display = 'none';
+    document.getElementById('go-to-race-btn').style.display = 'none';
+    document.getElementById('scratch-roller').style.display = 'block';
+    document.getElementById('scratch-result').innerHTML = '';
+    document.getElementById('roll-result').innerHTML = '';
+    document.getElementById('scratch-count-badge').textContent = '0 / 4 scratched';
+    renderScratchedList();
+    renderCardAssignments();
+    renderLog();
+    switchTabDirect('setup');
+  }
+
+  function fullReset() {
+    state = { players: [], cardAssignments: {}, penalties: [0.25, 0.50, 0.75, 1.00], scratchedHorses: [], horsePositions: {}, rollLog: [], rollCount: 0, pot: 0, winner: null, playerLedger: {} };
+    HORSE_NUMBERS.forEach(n => state.cardAssignments[n] = {});
+    document.getElementById('winner-screen').style.display = 'none';
+    document.getElementById('summary-screen').style.display = 'none';
+    document.getElementById('player-list').innerHTML = '<p style="font-size:13px;color:#666">No players added yet.</p>';
+    document.getElementById('card-assignments').innerHTML = '';
+    document.getElementById('card-assignment-section').style.display = 'none';
+    document.getElementById('go-to-race-btn').style.display = 'none';
+    document.getElementById('scratch-roller').style.display = 'block';
+    document.getElementById('scratch-result').innerHTML = '';
+    document.getElementById('roll-result').innerHTML = '';
+    document.getElementById('scratch-count-badge').textContent = '0 / 4 scratched';
+    renderScratchedList();
+    renderLog();
+    switchTabDirect('setup');
+  }
+
+  function exportLog() {
+    const text = state.rollLog.map(e => {
+      if (e.type === 'scratch') return `Scratch ${e.roll}: ${e.dice[0]}+${e.dice[1]}=${e.horse} | Scratched | ${e.holders.join(', ') || 'no holders'} pay ${fmt(e.penalty)} | Pot: ${fmt(e.potAfter)}`;
+      if (e.type === 'scratch-hit') return `Roll ${e.rollNum}: ${e.dice[0]}+${e.dice[1]}=${e.horse} | Scratched horse | ${e.roller} pays ${fmt(e.penalty)} | Pot: ${fmt(e.potAfter)}`;
+      return `Roll ${e.rollNum}: ${e.dice[0]}+${e.dice[1]}=${e.horse} | Horse ${e.horse} → space ${e.position}${e.winner ? ' 🏆 WINNER' : ''}`;
+    }).join('\n');
+    navigator.clipboard.writeText(text).then(() => alert('Log copied!')).catch(() => prompt('Copy this:', text));
+  }
+
+  renderCardAssignments();
+</script>
+</body>
+</html>
